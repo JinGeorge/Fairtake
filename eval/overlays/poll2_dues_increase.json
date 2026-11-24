@@ -1,0 +1,10 @@
+{
+  "poll_id": "poll2_dues_increase",
+  "notes": "Conditional approval is its own group and never counts as 'for'. Expected: no clear majority at stance and group level.",
+  "sub_issues": {
+    "main": {"groups": {"approve": "for", "reject": "against", "conditional": "conditional"}}
+  },
+  "excluded_views": {},
+  "alternatives": [],
+  "must_not_terms": []
+}

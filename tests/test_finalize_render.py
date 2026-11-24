@@ -223,6 +223,7 @@ def test_public_view_strips_internal_fields():
     data = public_dict(build_report(meta=Meta(run_index=2, llm_calls=5)))
     assert "meta" not in data and data["run_index"] == 2
     sub = data["sub_issues"][0]
+    assert not {"other_ids", "not_addressed_ids", "contested_ids"} & set(sub)
     assert all("response_ids" not in t for t in sub["themes"])
     assert all("response_ids" not in cg for cg in sub["common_ground"])
 

@@ -1,0 +1,13 @@
+{
+  "poll_id": "poll4_parking_rules",
+  "notes": "Two sub-issues taken from the key's sub_issue_labels. The permit-system group gives no view on fines, so 'unclear' becomes not_addressed.",
+  "views_from_key_sub_issue_labels": true,
+  "rename": {"fines": {"unclear": "not_addressed"}},
+  "sub_issues": {
+    "visitor_limit": {"groups": {"support": "for", "oppose": "against", "alternative": "alternative"}},
+    "fines": {"groups": {"support": "for", "oppose": "against"}}
+  },
+  "excluded_views": {},
+  "alternatives": [],
+  "must_not_terms": []
+}

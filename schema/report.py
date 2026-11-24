@@ -234,6 +234,10 @@ class SubIssueReport(_Model):
     group_result: GroupResult | None = None
     themes: list[Theme]
     common_ground: list[CommonGround] = Field(default_factory=list)
+    # Internal, for evaluation and audit; stripped from the public view.
+    other_ids: list[str] = Field(default_factory=list)
+    not_addressed_ids: list[str] = Field(default_factory=list)
+    contested_ids: list[str] = Field(default_factory=list)
 
 
 class Meta(_Model):
@@ -247,6 +251,7 @@ class Meta(_Model):
     other_rate_before: float | None = None
     other_rate_after: float | None = None
     redactions: dict[str, int] = Field(default_factory=dict)
+    excluded_ids: dict[str, list[str]] = Field(default_factory=dict)
     withheld_from_summary: list[str] = Field(default_factory=list)
     leak_replacements: list[str] = Field(default_factory=list)
     privacy_replacements: list[str] = Field(default_factory=list)

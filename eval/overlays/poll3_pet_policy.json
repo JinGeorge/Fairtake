@@ -1,0 +1,10 @@
+{
+  "poll_id": "poll3_pet_policy",
+  "notes": "Choice question (allow / restrict / ban), no for/against groups. The 2-person 'ban' view must appear.",
+  "sub_issues": {
+    "main": {"groups": {"allow": null, "restrict": null, "ban": null}}
+  },
+  "excluded_views": {},
+  "alternatives": [],
+  "must_not_terms": []
+}
