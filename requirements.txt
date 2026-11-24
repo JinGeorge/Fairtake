@@ -1,0 +1,9 @@
+# Core
+anthropic          # LLM calls (provider not final; swap if another is chosen)
+python-dotenv      # load API keys from .env
+numpy
+scikit-learn       # clustering (KMeans / agglomerative) for the clustered pipeline
+
+# Embeddings: pick ONE once decided (do not install both)
+# sentence-transformers   # local model, no API key; needs torch wheels (check Python 3.14 support)
+# (or a hosted embeddings API client)
