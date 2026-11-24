@@ -1,5 +1,6 @@
-# Core
-anthropic          # LLM calls (provider not final)
+# LLM providers (the active one is chosen in config.yaml)
+openai             # OpenAI, and any OpenAI-compatible endpoint via llm.base_url
+anthropic          # optional second adapter
 python-dotenv      # load API keys from .env
 pydantic           # report and LLM output schemas
 pyyaml             # config.yaml
@@ -10,5 +11,4 @@ scipy              # Hungarian matching for stance alignment
 scikit-learn       # F1, Cohen's kappa
 pytest             # unit tests for deterministic code
 
-# Judge: a different model family's client may be added once decided
 # No embeddings library is needed for the stance-coding design (v2.2).

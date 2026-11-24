@@ -1,0 +1,69 @@
+# Fairtake configuration. Every tunable value from the spec lives here.
+# To use a different file, set the FAIRTAKE_CONFIG environment variable to its path.
+
+# ---------------------------------------------------------------------------
+# LLM used by the pipeline and the baselines.
+# To switch provider, change `provider`, `api_key_env`, `base_url` and the model names.
+# Any OpenAI-compatible endpoint (many hosted providers offer one) works with
+# provider: openai plus its base_url.
+# ---------------------------------------------------------------------------
+llm:
+  provider: openai              # openai | anthropic
+  api_key_env: OPENAI_API_KEY   # name of the variable in .env, never the key itself
+  base_url: null                # null = the provider's default endpoint
+  timeout_s: 120
+  max_retries: 3
+  cache_dir: results/.llm_cache # eval-only response cache; null disables it
+  models:                       # set these before running any LLM call
+    call1_design: CHANGE_ME
+    call1b_other: CHANGE_ME
+    call2a_code: CHANGE_ME
+    call2b_code: CHANGE_ME
+    call3_write: CHANGE_ME
+    call4_privacy: CHANGE_ME
+    baseline: CHANGE_ME
+
+# LLM judge for the evaluation. Should be a different model family from `llm`.
+judge:
+  provider: openai
+  api_key_env: OPENAI_API_KEY
+  base_url: null
+  timeout_s: 120
+  max_retries: 3
+  model: CHANGE_ME
+
+# ---------------------------------------------------------------------------
+# Pipeline (spec v2.2, §4)
+# ---------------------------------------------------------------------------
+pipeline:
+  min_respondents: 5        # size gate, before and after exclusions
+  min_words: 3              # shorter responses are excluded as no_content
+  max_stances: 8            # per sub-issue, excluding other / not_addressed
+  coding_batch: 200         # responses per coding call
+  other_recode_min: 1       # `other` responses that trigger the second pass
+  clear_majority: 0.60      # top share >= this -> majority
+  plurality_margin: 0.10    # top - second >= this -> plurality
+  min_group: 3              # smaller stances get the definition, not a summary
+  leak_ngram: 5             # word overlap that counts as a quote
+  sens_max_contested: 12    # robustness check skips enumeration above this
+  shuffle: true
+  double_coding: true
+  validation_retry: true
+  other_second_pass: true
+  privacy_review: true
+
+# Deterministic scrubbing in Prepare (§4.1)
+scrub:
+  unit_pattern: '(?i)\b(?:unit|apt|apartment|lot|flat|suite)\.?\s*(?:no\.?\s*|number\s*|#\s*)?\d+[a-z]?\b'
+  email_pattern: '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}'
+  phone_min_digits: 8
+
+# ---------------------------------------------------------------------------
+# Evaluation (§8). Paths are relative to the repository root.
+# ---------------------------------------------------------------------------
+eval:
+  n_runs: 5
+  polls_dir: evalset/polls
+  answer_keys_dir: evalset/answer_keys
+  overlays_dir: eval/overlays
+  results_dir: results
