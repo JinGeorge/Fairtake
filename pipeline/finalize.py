@@ -29,6 +29,7 @@ from pipeline.wording import (
 )
 from schema.report import (
     NOT_ADDRESSED,
+    OTHER,
     RESERVED_STANCES,
     CommonGround,
     Excluded,
@@ -215,6 +216,9 @@ def _sub_issue_report(
         group_result=sub.group_result,
         themes=themes,
         common_ground=_common_ground(points, sub, groups, gate, settings.min_group),
+        other_ids=list(sub.stance_members[OTHER]),
+        not_addressed_ids=list(sub.stance_members[NOT_ADDRESSED]),
+        contested_ids=list(sub.contested_ids),
     )
     return report, labels
 
@@ -309,6 +313,7 @@ def finalize(
     leakage check can compare against all of them.
     """
     meta = meta.model_copy(deep=True) if meta else Meta()
+    meta.excluded_ids = {reason: list(ids) for reason, ids in count.excluded_ids.items()}
     if count.status != "ok":
         return too_few_report(poll_id, count.n_received, count.n_respondents, count.excluded, n_invited, meta)
 

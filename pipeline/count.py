@@ -37,6 +37,7 @@ class SubIssueCount:
     stance_counts: dict[str, int]  # every codebook stance, including other / not_addressed
     stance_members: dict[str, list[str]]
     stance_contested: dict[str, int]
+    contested_ids: list[str]
     group_totals: dict[str, int]  # for / against / conditional / alternative
     not_addressed: int
     addressed: int
@@ -56,6 +57,7 @@ class CountResult:
     ambiguous_count: int
     respondent_ids: list[str]
     sub_issues: list[SubIssueCount]
+    excluded_ids: dict[str, list[str]]  # reason -> ids
 
 
 # ---------------------------------------------------------------------------
@@ -214,6 +216,7 @@ def _count_sub_issue(
     counts = {s.id: 0 for s in stances}
     members: dict[str, list[str]] = {s.id: [] for s in stances}
     contested = {s.id: 0 for s in stances}
+    contested_ids: list[str] = []
     swaps: list[tuple[str, str]] = []
 
     for rid in respondents:
@@ -222,6 +225,7 @@ def _count_sub_issue(
         members[label.stance].append(rid)
         if label.status == "contested":
             contested[label.stance] += 1
+            contested_ids.append(rid)
             if label.alt is not None and label.alt != label.stance:
                 swaps.append((label.stance, label.alt))
 
@@ -249,6 +253,7 @@ def _count_sub_issue(
         stance_counts=counts,
         stance_members=members,
         stance_contested=contested,
+        contested_ids=contested_ids if double_coded else [],
         group_totals=totals,
         not_addressed=counts[NOT_ADDRESSED],
         addressed=n - counts[NOT_ADDRESSED],
@@ -303,14 +308,20 @@ def count_poll(
         low_content=sum(1 for r in triage.values() if r == "low_content"),
         no_position=len(no_position),
     )
+    excluded_ids = {
+        "no_content": list(no_content_ids),
+        "off_topic": [rid for rid, r in triage.items() if r == "off_topic"],
+        "low_content": [rid for rid, r in triage.items() if r == "low_content"],
+        "no_position": no_position,
+    }
     n = n_received - excluded.total
     ambiguous = sum(1 for rid in respondents for lab in labels[rid].values() if lab.status == "ambiguous")
 
     if n < settings.min_respondents:
-        return CountResult("too_few_responses", n_received, n, excluded, ambiguous, respondents, [])
+        return CountResult("too_few_responses", n_received, n, excluded, ambiguous, respondents, [], excluded_ids)
 
     subs = [
         _count_sub_issue(sub, stances, respondents, labels, n, settings, double_coded)
         for sub, stances in codebook.items()
     ]
-    return CountResult("ok", n_received, n, excluded, ambiguous, respondents, subs)
+    return CountResult("ok", n_received, n, excluded, ambiguous, respondents, subs, excluded_ids)

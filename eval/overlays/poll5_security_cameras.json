@@ -1,0 +1,17 @@
+{
+  "poll_id": "poll5_security_cameras",
+  "notes": "Entrances-only support is conditional, not 'for'. Off-topic and low-content responses are excluded; the abusive response r04 is excluded in the key but has accepted alternatives.",
+  "sub_issues": {
+    "main": {"groups": {"support": "for", "oppose": "against", "entrances_only": "conditional"}}
+  },
+  "excluded_views": {"off_topic": "off_topic", "low_content": "low_content", "abusive": "no_position"},
+  "alternatives": [
+    {
+      "id": "r04",
+      "sub_issue": "main",
+      "accept": ["oppose", "not_addressed"],
+      "reason": "Abusive response about the idea with no clear argument. Excluding it, coding it as opposition, or as no position are all defensible readings."
+    }
+  ],
+  "must_not_terms": ["Daniel", "Kovac", "12B"]
+}

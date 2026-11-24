@@ -1,0 +1,10 @@
+{
+  "poll_id": "poll1_pool_hours",
+  "notes": "Choice question (extend / keep / shorten), so no view has a for/against group and there is no group-level result.",
+  "sub_issues": {
+    "main": {"groups": {"extend": null, "keep": null, "shorten": null}}
+  },
+  "excluded_views": {},
+  "alternatives": [],
+  "must_not_terms": []
+}
