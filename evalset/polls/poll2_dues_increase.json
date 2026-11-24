@@ -1,0 +1,167 @@
+{
+  "poll_id": "poll2_dues_increase",
+  "question": "The committee proposes a 12% increase in quarterly levies to fund roof repairs and build the sinking fund. Do you support this? Please explain.",
+  "n_responses": 40,
+  "responses": [
+    {
+      "id": "r01",
+      "text": "Agree with the committee on this one."
+    },
+    {
+      "id": "r02",
+      "text": "Makes sense. Sinking fund needs to be healthy."
+    },
+    {
+      "id": "r03",
+      "text": "I'm an owner-occupier planning to stay long term, so I'm happy to invest in the building. Yes."
+    },
+    {
+      "id": "r04",
+      "text": "The roof has leaked into two units already. We have to fix it properly and that costs money. I support it."
+    },
+    {
+      "id": "r05",
+      "text": "I don't support it, I think the committee is being too cautious about the sinking fund."
+    },
+    {
+      "id": "r06",
+      "text": "Go ahead with it. The longer we wait, the worse the roof gets."
+    },
+    {
+      "id": "r07",
+      "text": "Not supportive. There's been no breakdown of costs at all."
+    },
+    {
+      "id": "r08",
+      "text": "Yes from me. Water damage is the last thing we want to be dealing with."
+    },
+    {
+      "id": "r09",
+      "text": "I vote no. We should get the builder's warranty looked at, the roof is only 15 years old."
+    },
+    {
+      "id": "r10",
+      "text": "No. Strongly disagree with this level of increase."
+    },
+    {
+      "id": "r11",
+      "text": "Reject - borrow the money instead and spread the cost over years."
+    },
+    {
+      "id": "r12",
+      "text": "It's overdue honestly. Levies have been kept artificially low for years."
+    },
+    {
+      "id": "r13",
+      "text": "Show us a detailed budget and how long the higher levy lasts. Then maybe."
+    },
+    {
+      "id": "r14",
+      "text": "The increase is reasonable given inflation and the state of the building. Go ahead."
+    },
+    {
+      "id": "r15",
+      "text": "No to this. Cost of living is brutal and this is a big jump."
+    },
+    {
+      "id": "r16",
+      "text": "Approve. Deferred maintenance always ends up costing more."
+    },
+    {
+      "id": "r17",
+      "text": "Investors can pass it on to tenants, owner-occupiers like me can't. No."
+    },
+    {
+      "id": "r18",
+      "text": "Reject. The committee hasn't shown us where the current money is going."
+    },
+    {
+      "id": "r19",
+      "text": "Get three independent quotes for the roof first, then I'll consider it."
+    },
+    {
+      "id": "r20",
+      "text": "Nope. Too much, too fast."
+    },
+    {
+      "id": "r21",
+      "text": "Yes. Our sinking fund is far too low for a building this age, we're one disaster away from a special levy."
+    },
+    {
+      "id": "r22",
+      "text": "OK in principle but I want a cap and a clear end date for the increase."
+    },
+    {
+      "id": "r23",
+      "text": "Could there be a hardship arrangement for owners who can't manage it? If so I'd vote yes."
+    },
+    {
+      "id": "r24",
+      "text": "12% sounds like a lot but in dollar terms it's manageable. We need the roof done."
+    },
+    {
+      "id": "r25",
+      "text": "I can't afford another increase right now. Everything else has gone up too."
+    },
+    {
+      "id": "r26",
+      "text": "Support. Strata buildings that underfund maintenance end up in trouble, I've seen it happen."
+    },
+    {
+      "id": "r27",
+      "text": "No. Levies went up only two years ago. Find savings elsewhere first."
+    },
+    {
+      "id": "r28",
+      "text": "I'm a pensioner on a fixed income and 12% is simply too much for me."
+    },
+    {
+      "id": "r29",
+      "text": "Against. Many of us are already stretched with mortgage rates where they are."
+    },
+    {
+      "id": "r30",
+      "text": "Approve, as long as the money really goes to the roof. Which I trust it will."
+    },
+    {
+      "id": "r31",
+      "text": "I support the increase. Insurance premiums will also go up if the roof keeps leaking."
+    },
+    {
+      "id": "r32",
+      "text": "Fully support. Property values depend on the building being well maintained."
+    },
+    {
+      "id": "r33",
+      "text": "The building manager contract is overpriced - cut that before asking owners for more."
+    },
+    {
+      "id": "r34",
+      "text": "I support it - the engineer's report was pretty clear about the roof."
+    },
+    {
+      "id": "r35",
+      "text": "I'd support it if it's phased in, say 6% now and 6% next year."
+    },
+    {
+      "id": "r36",
+      "text": "Please don't. I'm already behind on bills."
+    },
+    {
+      "id": "r37",
+      "text": "I'd rather pay a bit more now than get hit with a huge one-off bill later. Support."
+    },
+    {
+      "id": "r38",
+      "text": "Yes, approve it."
+    },
+    {
+      "id": "r39",
+      "text": "Only if the roof work is tendered properly and progress is reported to owners."
+    },
+    {
+      "id": "r40",
+      "text": "I don't think the roof is as urgent as claimed. Patch it and revisit next year."
+    }
+  ]
+}

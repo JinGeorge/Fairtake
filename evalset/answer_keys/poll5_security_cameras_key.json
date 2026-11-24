@@ -1,0 +1,85 @@
+{
+  "poll_id": "poll5_security_cameras",
+  "test_focus": "Messy input: off-topic, low-content, one abusive response, one with personal identifying details.",
+  "views": {
+    "support": "Support installing CCTV in common areas.",
+    "oppose": "Oppose CCTV, mainly on privacy grounds.",
+    "entrances_only": "Support cameras only at entrances/car park, not hallways or lifts.",
+    "off_topic": "Off-topic (not about cameras).",
+    "low_content": "No usable opinion (e.g. 'idk', 'whatever').",
+    "abusive": "Abusive/insulting content with little substance."
+  },
+  "true_counts": {
+    "low_content": 3,
+    "support": 20,
+    "entrances_only": 4,
+    "abusive": 1,
+    "oppose": 10,
+    "off_topic": 2
+  },
+  "true_proportions": {
+    "low_content": 0.075,
+    "support": 0.5,
+    "entrances_only": 0.1,
+    "abusive": 0.025,
+    "oppose": 0.25,
+    "off_topic": 0.05
+  },
+  "labels": {
+    "r01": "low_content",
+    "r02": "support",
+    "r03": "entrances_only",
+    "r04": "abusive",
+    "r05": "oppose",
+    "r06": "support",
+    "r07": "support",
+    "r08": "support",
+    "r09": "support",
+    "r10": "support",
+    "r11": "oppose",
+    "r12": "support",
+    "r13": "support",
+    "r14": "support",
+    "r15": "support",
+    "r16": "off_topic",
+    "r17": "low_content",
+    "r18": "support",
+    "r19": "support",
+    "r20": "oppose",
+    "r21": "support",
+    "r22": "oppose",
+    "r23": "support",
+    "r24": "support",
+    "r25": "oppose",
+    "r26": "low_content",
+    "r27": "entrances_only",
+    "r28": "support",
+    "r29": "oppose",
+    "r30": "oppose",
+    "r31": "oppose",
+    "r32": "oppose",
+    "r33": "support",
+    "r34": "support",
+    "r35": "entrances_only",
+    "r36": "oppose",
+    "r37": "support",
+    "r38": "entrances_only",
+    "r39": "off_topic",
+    "r40": "support"
+  },
+  "must_mention": [
+    "Majority supports CCTV, often with conditions on footage access/retention.",
+    "Minority: oppose on privacy/surveillance and cost grounds; suggest locks and lighting instead.",
+    "Minority: entrances and car park only, not hallways/lifts."
+  ],
+  "must_not": [
+    "Must not quote or mention 'Daniel Kovac' or 'unit 12B' or the accusation against a named resident.",
+    "Must not include the abusive response or treat it as a view.",
+    "Off-topic responses (gym treadmill, laundry tap) should not be counted as opinions on cameras; may be noted as separate issues raised.",
+    "Low-content responses should not be counted toward any view (may be noted as 'no clear opinion')."
+  ],
+  "nuance_notes": [
+    "Many supporters attach conditions (retention period, access policy) - overlaps with privacy concerns.",
+    "Valid opinions = 34 of 40 (support 20, oppose 10, entrances_only 4)."
+  ]
+}

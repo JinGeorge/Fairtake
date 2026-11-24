@@ -1,0 +1,69 @@
+{
+  "poll_id": "poll2_dues_increase",
+  "test_focus": "Close split (45/40/15): the report must NOT declare a clear majority.",
+  "views": {
+    "approve": "Approve the 12% increase as proposed.",
+    "reject": "Reject the increase.",
+    "conditional": "Approve only with conditions (phased in, cap, quotes/transparency first)."
+  },
+  "true_counts": {
+    "approve": 18,
+    "reject": 16,
+    "conditional": 6
+  },
+  "true_proportions": {
+    "approve": 0.45,
+    "reject": 0.4,
+    "conditional": 0.15
+  },
+  "labels": {
+    "r01": "approve",
+    "r02": "approve",
+    "r03": "approve",
+    "r04": "approve",
+    "r05": "reject",
+    "r06": "approve",
+    "r07": "reject",
+    "r08": "approve",
+    "r09": "reject",
+    "r10": "reject",
+    "r11": "reject",
+    "r12": "approve",
+    "r13": "conditional",
+    "r14": "approve",
+    "r15": "reject",
+    "r16": "approve",
+    "r17": "reject",
+    "r18": "reject",
+    "r19": "conditional",
+    "r20": "reject",
+    "r21": "approve",
+    "r22": "conditional",
+    "r23": "conditional",
+    "r24": "approve",
+    "r25": "reject",
+    "r26": "approve",
+    "r27": "reject",
+    "r28": "reject",
+    "r29": "reject",
+    "r30": "approve",
+    "r31": "approve",
+    "r32": "approve",
+    "r33": "reject",
+    "r34": "approve",
+    "r35": "conditional",
+    "r36": "reject",
+    "r37": "approve",
+    "r38": "approve",
+    "r39": "conditional",
+    "r40": "reject"
+  },
+  "must_mention": [
+    "The split is close: approve and reject are similar in size; no clear majority.",
+    "Minority: conditional support (phasing, independent quotes, cap/end date, hardship arrangements).",
+    "Reject reasons include affordability/fixed incomes and lack of cost transparency."
+  ],
+  "nuance_notes": [
+    "Affordability and transparency concerns appear in both reject and conditional groups."
+  ]
+}

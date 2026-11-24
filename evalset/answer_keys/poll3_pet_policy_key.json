@@ -1,0 +1,68 @@
+{
+  "poll_id": "poll3_pet_policy",
+  "test_focus": "Tiny minority (80/15/5): the 2-person view must still appear.",
+  "views": {
+    "allow": "Allow pets (with normal responsible-owner expectations).",
+    "restrict": "Allow pets only with restrictions (size, number, approval, common-area rules).",
+    "ban": "Ban pets (allergies/hygiene)."
+  },
+  "true_counts": {
+    "allow": 32,
+    "ban": 2,
+    "restrict": 6
+  },
+  "true_proportions": {
+    "allow": 0.8,
+    "ban": 0.05,
+    "restrict": 0.15
+  },
+  "labels": {
+    "r01": "allow",
+    "r02": "allow",
+    "r03": "allow",
+    "r04": "allow",
+    "r05": "allow",
+    "r06": "ban",
+    "r07": "allow",
+    "r08": "allow",
+    "r09": "allow",
+    "r10": "restrict",
+    "r11": "restrict",
+    "r12": "allow",
+    "r13": "allow",
+    "r14": "allow",
+    "r15": "allow",
+    "r16": "allow",
+    "r17": "restrict",
+    "r18": "allow",
+    "r19": "ban",
+    "r20": "allow",
+    "r21": "restrict",
+    "r22": "allow",
+    "r23": "allow",
+    "r24": "allow",
+    "r25": "allow",
+    "r26": "allow",
+    "r27": "restrict",
+    "r28": "allow",
+    "r29": "allow",
+    "r30": "allow",
+    "r31": "allow",
+    "r32": "allow",
+    "r33": "allow",
+    "r34": "allow",
+    "r35": "allow",
+    "r36": "allow",
+    "r37": "allow",
+    "r38": "allow",
+    "r39": "allow",
+    "r40": "restrict"
+  },
+  "must_mention": [
+    "Minority: restrictions (size limits, approval, lead/common-area rules, registration).",
+    "Small minority (2 people): ban, citing severe allergies in shared spaces and hygiene/mess."
+  ],
+  "nuance_notes": [
+    "Some 'allow' respondents also suggest light-touch measures like registration - not the same as the restrict group."
+  ]
+}

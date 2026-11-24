@@ -1,0 +1,68 @@
+{
+  "poll_id": "poll1_pool_hours",
+  "test_focus": "Easy case: clear majority with two distinct minorities (70/20/10).",
+  "views": {
+    "extend": "Extend the pool hours (earlier and/or later opening).",
+    "keep": "Keep the current 7am-8pm hours.",
+    "shorten": "Shorten the hours, mainly due to noise, cost or safety."
+  },
+  "true_counts": {
+    "extend": 28,
+    "shorten": 4,
+    "keep": 8
+  },
+  "true_proportions": {
+    "extend": 0.7,
+    "shorten": 0.1,
+    "keep": 0.2
+  },
+  "labels": {
+    "r01": "extend",
+    "r02": "extend",
+    "r03": "extend",
+    "r04": "shorten",
+    "r05": "extend",
+    "r06": "extend",
+    "r07": "keep",
+    "r08": "extend",
+    "r09": "extend",
+    "r10": "keep",
+    "r11": "extend",
+    "r12": "keep",
+    "r13": "extend",
+    "r14": "extend",
+    "r15": "extend",
+    "r16": "keep",
+    "r17": "keep",
+    "r18": "extend",
+    "r19": "extend",
+    "r20": "extend",
+    "r21": "extend",
+    "r22": "keep",
+    "r23": "shorten",
+    "r24": "keep",
+    "r25": "extend",
+    "r26": "extend",
+    "r27": "shorten",
+    "r28": "keep",
+    "r29": "extend",
+    "r30": "extend",
+    "r31": "shorten",
+    "r32": "extend",
+    "r33": "extend",
+    "r34": "extend",
+    "r35": "extend",
+    "r36": "extend",
+    "r37": "extend",
+    "r38": "extend",
+    "r39": "extend",
+    "r40": "extend"
+  },
+  "must_mention": [
+    "Minority: keep current hours (some see it as a fair compromise / other priorities).",
+    "Minority: shorten hours, citing noise for nearby units, running costs and safety/supervision."
+  ],
+  "nuance_notes": [
+    "Several 'extend' respondents suggest compromises (quiet rules after 8-9pm, summer-only extension, trial period)."
+  ]
+}

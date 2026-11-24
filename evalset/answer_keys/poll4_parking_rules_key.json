@@ -1,0 +1,105 @@
+{
+  "poll_id": "poll4_parking_rules",
+  "test_focus": "Mixed opinions across two sub-issues: report must separate them, not force one 'view'.",
+  "views": {
+    "both": "Support both the 4-hour visitor limit and the fines.",
+    "limit_not_fines": "Support the visitor time limit but oppose fines.",
+    "neither": "Oppose both changes.",
+    "permit_system": "Prefers a different approach: a visitor permit/booking system."
+  },
+  "true_counts": {
+    "limit_not_fines": 16,
+    "both": 14,
+    "permit_system": 4,
+    "neither": 6
+  },
+  "true_proportions": {
+    "limit_not_fines": 0.4,
+    "both": 0.35,
+    "permit_system": 0.1,
+    "neither": 0.15
+  },
+  "labels": {
+    "r01": "limit_not_fines",
+    "r02": "limit_not_fines",
+    "r03": "both",
+    "r04": "limit_not_fines",
+    "r05": "limit_not_fines",
+    "r06": "permit_system",
+    "r07": "both",
+    "r08": "both",
+    "r09": "limit_not_fines",
+    "r10": "neither",
+    "r11": "neither",
+    "r12": "both",
+    "r13": "limit_not_fines",
+    "r14": "permit_system",
+    "r15": "both",
+    "r16": "both",
+    "r17": "permit_system",
+    "r18": "limit_not_fines",
+    "r19": "neither",
+    "r20": "neither",
+    "r21": "limit_not_fines",
+    "r22": "neither",
+    "r23": "permit_system",
+    "r24": "limit_not_fines",
+    "r25": "limit_not_fines",
+    "r26": "both",
+    "r27": "limit_not_fines",
+    "r28": "both",
+    "r29": "limit_not_fines",
+    "r30": "limit_not_fines",
+    "r31": "limit_not_fines",
+    "r32": "neither",
+    "r33": "limit_not_fines",
+    "r34": "both",
+    "r35": "limit_not_fines",
+    "r36": "both",
+    "r37": "both",
+    "r38": "both",
+    "r39": "both",
+    "r40": "both"
+  },
+  "must_mention": [
+    "Broad support for the 4-hour visitor limit (both + limit_not_fines = 30 of 40), but fines are divided.",
+    "Fines: about as many oppose (22) as support (14) - no clear majority for fines.",
+    "Minority: oppose both, including carers/visitors who need longer than 4 hours.",
+    "Minority: alternative proposal of a visitor permit/booking system.",
+    "Concerns about enforcement contractors (aggressive, money leaving the building) and requests for warnings first."
+  ],
+  "nuance_notes": [
+    "The report must treat sub-issues A and B separately. A single 'majority view' would be misleading.",
+    "Concern about carers/tradies needing >4 hours appears in both the limit_not_fines and neither groups."
+  ],
+  "sub_issue_labels": {
+    "both": {
+      "visitor_limit": "support",
+      "fines": "support"
+    },
+    "limit_not_fines": {
+      "visitor_limit": "support",
+      "fines": "oppose"
+    },
+    "neither": {
+      "visitor_limit": "oppose",
+      "fines": "oppose"
+    },
+    "permit_system": {
+      "visitor_limit": "alternative",
+      "fines": "unclear"
+    }
+  },
+  "sub_issue_counts": {
+    "visitor_limit": {
+      "support": 30,
+      "alternative": 4,
+      "oppose": 6
+    },
+    "fines": {
+      "oppose": 22,
+      "support": 14,
+      "unclear": 4
+    }
+  }
+}
