@@ -13,7 +13,11 @@ llm:
   base_url: null                # null = the provider's default endpoint
   timeout_s: 120
   max_retries: 3
-  cache_dir: results/.llm_cache # eval-only response cache; null disables it
+  cache_dir: results/.llm_cache # eval-only response cache; null disables it (must be null in production)
+  temperature: 0                # null = omit (some reasoning models reject it)
+  max_output_tokens: 16000
+  strict_schema: true           # OpenAI structured outputs in strict mode
+  prices: {}                    # optional, USD per million tokens: {model: {input: 0.0, output: 0.0}}
   models:                       # set these before running any LLM call
     call1_design: CHANGE_ME
     call1b_other: CHANGE_ME
@@ -21,7 +25,7 @@ llm:
     call2b_code: CHANGE_ME
     call3_write: CHANGE_ME
     call4_privacy: CHANGE_ME
-    baseline: CHANGE_ME
+    baseline: gpt-4o-mini
 
 # LLM judge for the evaluation. Should be a different model family from `llm`.
 judge:
@@ -37,7 +41,7 @@ judge:
 # ---------------------------------------------------------------------------
 pipeline:
   min_respondents: 5        # size gate, before and after exclusions
-  min_words: 3              # shorter responses are excluded as no_content
+  min_words: 1              # shorter responses are excluded as no_content; 1 keeps one-word votes ("Yes, definitely." is a vote)
   max_stances: 8            # per sub-issue, excluding other / not_addressed
   coding_batch: 200         # responses per coding call
   other_recode_min: 1       # `other` responses that trigger the second pass
