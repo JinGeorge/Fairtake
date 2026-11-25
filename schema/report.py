@@ -176,6 +176,63 @@ class PrivacyOutput(_Model):
 
 
 # ---------------------------------------------------------------------------
+# Baseline LLM outputs (spec §7). Lists only, no maps, so they work with
+# OpenAI strict structured output; every field is required.
+# ---------------------------------------------------------------------------
+
+
+class BaselineExclusion(_Model):
+    id: str
+    reason: TriageReason
+
+
+class BaselineTheme(_Model):
+    id: str
+    label: str
+    group: GroupType | None
+    definition: str
+    summary: str
+    response_ids: list[str]
+
+
+class BaselineSubIssue(_Model):
+    id: str
+    description: str
+    themes: list[BaselineTheme]
+    not_addressed_ids: list[str]
+
+
+class StrongBaselineOutput(_Model):
+    """Strong baseline: every response in a theme or excluded; code counts."""
+
+    exclusions: list[BaselineExclusion]
+    sub_issues: list[BaselineSubIssue] = Field(min_length=1)
+
+
+class NaiveTheme(BaselineTheme):
+    count: int
+
+
+class NaiveSubIssue(_Model):
+    id: str
+    description: str
+    themes: list[NaiveTheme]
+    not_addressed_ids: list[str]
+    result_kind: Kind
+    leading_theme: str | None
+    group_kind: Kind | None
+    leading_group: Literal["for", "against"] | None
+
+
+class NaiveBaselineOutput(_Model):
+    """Naive baseline: the model also writes the counts and the majority calls."""
+
+    n_respondents: int
+    exclusions: list[BaselineExclusion]
+    sub_issues: list[NaiveSubIssue] = Field(min_length=1)
+
+
+# ---------------------------------------------------------------------------
 # Report
 # ---------------------------------------------------------------------------
 
@@ -270,6 +327,7 @@ class Meta(_Model):
     withheld_from_summary: list[str] = Field(default_factory=list)
     leak_replacements: list[str] = Field(default_factory=list)
     privacy_replacements: list[str] = Field(default_factory=list)
+    notes: list[str] = Field(default_factory=list)  # repairs made to LLM output, by id or location only
 
 
 class Report(_Model):

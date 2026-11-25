@@ -45,8 +45,17 @@ class CallModels(_Settings):
     baseline: str
 
 
+class Price(_Settings):
+    input: float = Field(ge=0)  # USD per million input tokens
+    output: float = Field(ge=0)  # USD per million output tokens
+
+
 class LLMSettings(ProviderSettings):
     cache_dir: str | None = None
+    temperature: float | None = Field(default=0, ge=0, le=2)
+    max_output_tokens: int = Field(default=16000, ge=256)
+    strict_schema: bool = True
+    prices: dict[str, Price] = Field(default_factory=dict)
     models: CallModels
 
 

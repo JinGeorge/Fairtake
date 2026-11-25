@@ -59,11 +59,18 @@ def _poll(texts, roster=None):
 
 def test_prepare_drops_short_responses():
     poll = _poll(["idk", "no strong feelings", "yes please do it", "whatever", "I oppose this idea"])
-    prepared = prepare(poll, CFG.pipeline, SCRUB)
+    prepared = prepare(poll, CFG.pipeline.model_copy(update={"min_words": 3}), SCRUB)
     assert prepared.status == "ok"
     assert prepared.no_content_ids == ["r01", "r04"]
     assert prepared.kept_ids == ["r02", "r03", "r05"]
     assert set(prepared.wrapped) == set(prepared.kept_ids)
+
+
+def test_default_min_words_drops_only_empty_responses():
+    poll = _poll(["", "  ...  ", "Yes.", "whatever", "I oppose this idea"])
+    prepared = prepare(poll, CFG.pipeline, SCRUB)
+    assert prepared.no_content_ids == ["r01", "r02"]  # "whatever" is left for the coding passes
+    assert prepared.kept_ids == ["r03", "r04", "r05"]
 
 
 def test_prepare_size_gate():
@@ -99,3 +106,11 @@ def test_evalset_poll_prepares(poll_id):
     assert prepared.n_received == 40
     assert len(prepared.kept_ids) + len(prepared.no_content_ids) == 40
     assert all("12B" not in prepared.scrubbed[r] for r in prepared.scrubbed)
+
+
+def test_short_real_vote_is_kept_with_default_min_words():
+    # Poll 5's r24 is "Yes, definitely.", a support vote; it must reach the coding passes.
+    from pipeline.loader import load_poll
+
+    prepared = prepare(load_poll("poll5_security_cameras", CFG), CFG.pipeline, CFG.scrub)
+    assert "r24" in prepared.kept_ids

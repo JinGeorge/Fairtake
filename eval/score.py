@@ -86,6 +86,7 @@ class _SubScore:
     group_type_correct: list[bool]
     response_group_correct: list[bool]
     matching: Matching | None
+    alternatives_used: list[str]
 
 
 def _predicted_view(placed: str, mapping: dict[str, str]) -> str:
@@ -111,13 +112,14 @@ def _score_sub(truth: Truth, tsub: TruthSubIssue, rsub: SubIssueReport | None, p
     mapping = matching.mapping if matching else {}
     contested = set(rsub.contested_ids) if rsub else set()
 
-    y_true, y_pred, contested_ok, agreed_ok, response_group_ok = [], [], [], [], []
+    y_true, y_pred, contested_ok, agreed_ok, response_group_ok, used = [], [], [], [], [], []
     for rid in truth.respondent_ids:
         true = tsub.labels[rid]
         pred = _predicted_view(placed[rid], mapping) if placed else "missing"
         alt = truth.alternatives.get((rid, tsub.id))
-        accepted = bool(alt and pred in alt.accept)
+        accepted = bool(alt and pred in alt.accept and pred != true)
         if accepted:
+            used.append(f"{rid}/{tsub.id}: {pred} ({alt.reason})")
             pred = true
         y_true.append(true)
         y_pred.append(pred)
@@ -163,7 +165,7 @@ def _score_sub(truth: Truth, tsub: TruthSubIssue, rsub: SubIssueReport | None, p
         group_ok = [theme_group[s] == tsub.groups[v] for s, v in mapping.items()]
 
     return _SubScore(y_true, y_pred, contested_ok, agreed_ok, share_errors, minority, calls, group_ok,
-                     response_group_ok, matching)
+                     response_group_ok, matching, used)
 
 
 # ---------------------------------------------------------------------------
@@ -236,8 +238,10 @@ def score_report(report: Report, settings: Settings | None = None) -> dict[str, 
         matching = subs[tsub.id].matching
         for (rid, alt_sub), alt in truth.alternatives.items():
             if alt_sub == tsub.id and rid in truth.excluded and rep_sub is not None and matching is not None:
-                if _predicted_view(placed[rep_sub][rid], matching.mapping) in alt.accept:
+                pred = _predicted_view(placed[rep_sub][rid], matching.mapping)
+                if pred in alt.accept:
                     accepted_alternative.add(rid)
+                    subs[tsub.id].alternatives_used.append(f"{rid}/{tsub.id}: {pred} ({alt.reason})")
 
     y_true = [y for s in subs.values() for y in s.y_true]
     y_pred = [y for s in subs.values() for y in s.y_pred]
@@ -270,6 +274,7 @@ def score_report(report: Report, settings: Settings | None = None) -> dict[str, 
         "call1_exclusion_agreement": report.meta.call1_exclusion_agreement,
         "contested_exclusions": report.contested_exclusions,
         "group_flags": {s.id: list(s.group_flags) for s in report.sub_issues},
+        "alternatives_used": [a for s in subs.values() for a in s.alternatives_used],
         "exclusion_precision": precision,
         "exclusion_recall": recall,
         "other_rate": sum(len(s.other_ids) for s in report.sub_issues) / n_sub_labels if n_sub_labels else None,
