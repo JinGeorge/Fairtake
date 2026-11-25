@@ -45,7 +45,8 @@ pipeline:
   plurality_margin: 0.10    # top - second >= this -> plurality
   min_group: 3              # smaller stances get the definition, not a summary
   leak_ngram: 5             # word overlap that counts as a quote
-  sens_max_contested: 12    # robustness check skips enumeration above this
+  sens_max_contested: 12    # robustness check skips enumeration above 2^this combinations
+  group_mismatch_min: 2     # mismatched members that flag a stance's group type
   shuffle: true
   double_coding: true
   validation_retry: true

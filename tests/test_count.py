@@ -4,7 +4,7 @@ import pytest
 
 from pipeline.config import load_config
 from pipeline.count import count_poll, majority_kind
-from schema.report import FinalLabel, Stance
+from schema.report import FinalExclusion, FinalLabel, Stance
 
 CFG = load_config()
 P = CFG.pipeline
@@ -66,14 +66,18 @@ def build(groups_of_ids, sub="main"):
     return labels
 
 
-def run(labels, codebook, *, no_content=(), triage=None, extra_kept=(), double_coded=True):
-    triage = triage or {}
-    kept = list(labels) + list(triage) + list(extra_kept)
+def run(labels, codebook, *, no_content=(), triage=None, exclusions=None, alt_exclusions=None,
+        extra_kept=(), double_coded=True):
+    """``triage`` is shorthand for agreed exclusions: {id: reason}."""
+    exclusions = dict(exclusions or {})
+    exclusions.update({rid: FinalExclusion(reason=r, status="agreed") for rid, r in (triage or {}).items()})
+    kept = list(labels) + list(exclusions) + list(extra_kept)
     return count_poll(
         n_received=len(kept) + len(no_content),
         no_content_ids=list(no_content),
         kept_ids=kept,
-        triage=triage,
+        exclusions=exclusions,
+        alt_exclusions=alt_exclusions,
         codebook=codebook,
         labels=labels,
         settings=P,
@@ -216,3 +220,150 @@ def test_unknown_stance_rejected():
 def test_missing_label_rejected():
     with pytest.raises(ValueError, match="exactly one label"):
         run(build({"a": 5}), {"main": book(st("a"))}, extra_kept=["r_unlabelled"])
+
+
+# ---------------------------------------------------------------------------
+# v2.3: contested exclusions move the denominator in the robustness check
+# ---------------------------------------------------------------------------
+
+
+def _cameras():
+    return {"main": book(st("support", "for"), st("oppose", "against"), st("entrances_only", "conditional"))}
+
+
+def test_contested_exclusion_that_crosses_threshold():
+    # 21 of 35 = 0.60 majority. If pass B was right to count r_x as opposed: 21 of 36 = 0.583.
+    labels = build({"support": 21, "oppose": 10, "entrances_only": 4})
+    alt = {"main": FinalLabel(stance="oppose", status="contested", group="against")}
+    exclusions = {"r_x": FinalExclusion(reason="off_topic", status="contested", alt=alt)}
+    res = run(labels, _cameras(), exclusions=exclusions)
+    sub = res.sub_issues[0]
+    assert res.n_respondents == 35 and res.contested_exclusions == 1
+    assert sub.stance_result.kind == "majority"
+    assert sub.stance_result.robust is False and sub.stance_result.alt_kinds == ["narrow_majority"]
+    assert sub.contested_count == 0  # excluded responses are not in any theme
+
+
+def test_contested_exclusion_without_alternative_changes_nothing():
+    labels = build({"support": 21, "oppose": 10, "entrances_only": 4})
+    exclusions = {"r_x": FinalExclusion(reason="off_topic", status="contested")}
+    sub = run(labels, _cameras(), exclusions=exclusions).sub_issues[0]
+    assert sub.stance_result.robust is True
+
+
+def test_counted_response_that_pass_b_excluded():
+    # 21 of 35 majority; without r01 (support) it is 20 of 34 = 0.588.
+    labels = build({"support": 21, "oppose": 10, "entrances_only": 4})
+    labels["r01"] = {"main": FinalLabel(stance="support", status="contested", group="for", group_status="contested")}
+    res = run(labels, _cameras(), alt_exclusions={"r01": "off_topic"})
+    sub = res.sub_issues[0]
+    assert res.contested_exclusions == 1
+    assert sub.stance_result.robust is False and sub.stance_result.alt_kinds == ["narrow_majority"]
+    assert sub.group_result.robust is False
+
+
+def test_no_position_flip_recomputes_the_denominator():
+    # 21 of 36 = 0.583. If pass B's not_addressed is right, r22 has no position and drops out:
+    # 21 of 35 = 0.60. Holding n fixed (v2.2) would have called this robust.
+    labels = build({"support": 21, "oppose": 11, "entrances_only": 4})
+    labels["r22"] = {"main": FinalLabel(stance="oppose", status="contested", alt="not_addressed",
+                                        group="against", group_status="contested", alt_group="none")}
+    sub = run(labels, _cameras()).sub_issues[0]
+    assert sub.stance_result.kind == "narrow_majority"
+    assert sub.stance_result.robust is False and sub.stance_result.alt_kinds == ["majority"]
+
+
+def test_robustness_reports_too_few_respondents():
+    labels = build({"a": 4, "b": 1})
+    labels["r05"] = {"main": FinalLabel(stance="b", status="contested", alt="not_addressed")}
+    sub = run(labels, {"main": book(st("a"), st("b"))}).sub_issues[0]  # alt version: only 4 respondents
+    assert sub.stance_result.robust is False
+
+
+def test_combination_limit_skips_enumeration():
+    labels = build({"a": 30, "b": 10})
+    for rid in list(labels)[: P.sens_max_contested + 1]:
+        labels[rid] = {"main": FinalLabel(stance="a", status="contested", alt="b")}
+    sub = run(labels, {"main": book(st("a"), st("b"))}).sub_issues[0]
+    assert sub.stance_result.robust is False and sub.stance_result.alt_kinds == []
+
+
+# ---------------------------------------------------------------------------
+# v2.3: per-response groups and the mismatch check
+# ---------------------------------------------------------------------------
+
+
+def _with_groups(labels, groups):
+    for rid, group in groups.items():
+        labels[rid] = {"main": labels[rid]["main"].model_copy(update={"group": group, "group_status": "agreed"})}
+    return labels
+
+
+def test_group_totals_use_per_response_groups():
+    labels = build({"support": 21, "oppose": 10, "entrances_only": 4})
+    _with_groups(labels, {"r01": "conditional", "r02": "conditional"})  # supporters who attach conditions
+    sub = run(labels, _cameras()).sub_issues[0]
+    g = sub.group_result
+    assert (g.for_, g.against, g.conditional) == (19, 10, 6)
+    assert g.kind == "narrow_majority"  # 19 of 35
+    assert sub.stance_result.kind == "majority"  # 21 of 35: stance counts are unchanged
+    assert sub.group_mismatch == {"support": 2, "oppose": 0, "entrances_only": 0}
+    assert sub.group_flags == ["support"]
+    # With the stance's own mapping it would be 21 of 35 = 0.60: the call is not settled.
+    assert g.robust is False and g.alt_kinds == ["majority"]
+    assert sub.response_groups["r01"] == "conditional" and sub.response_groups["r03"] == "for"
+
+
+def test_one_mismatch_is_not_flagged():
+    labels = _with_groups(build({"support": 25, "oppose": 10}), {"r01": "conditional"})
+    sub = run(labels, _cameras()).sub_issues[0]
+    assert sub.group_mismatch["support"] == 1 and sub.group_flags == []
+    assert sub.group_result.robust is True  # 24 or 25 of 35 is a clear majority either way
+
+
+def test_other_counts_toward_its_group_and_is_never_mismatched():
+    labels = build({"support": 20, "oppose": 10, "other": 2})
+    _with_groups(labels, {"r31": "for", "r32": "for"})
+    sub = run(labels, _cameras()).sub_issues[0]
+    assert sub.group_result.for_ == 22
+    assert sub.group_flags == []
+
+
+def test_choice_question_flags_mismatches_but_has_no_group_result():
+    labels = _with_groups(build({"extend": 28, "keep": 8, "shorten": 4}), {"r01": "for", "r02": "for"})
+    sub = run(labels, {"main": book(st("extend"), st("keep"), st("shorten"))}).sub_issues[0]
+    assert sub.group_result is None
+    assert sub.group_flags == ["extend"]
+
+
+def test_single_pass_still_flags_mismatches():
+    labels = _with_groups(build({"support": 21, "oppose": 10}), {"r01": "conditional", "r02": "conditional"})
+    sub = run(labels, _cameras(), double_coded=False).sub_issues[0]
+    assert sub.group_flags == ["support"] and sub.group_result.robust is None
+
+
+def test_contested_group_counts_as_contested():
+    labels = build({"support": 21, "oppose": 14})
+    labels["r01"] = {"main": FinalLabel(stance="support", status="agreed", group="for",
+                                        group_status="contested", alt_group="conditional")}
+    sub = run(labels, _cameras()).sub_issues[0]
+    assert sub.contested_count == 1 and sub.stance_contested["support"] == 1
+    assert sub.stance_result.robust is True  # the stance itself is agreed
+    assert sub.group_result.robust is False  # for 21 or 20 of 35: majority or narrow
+
+
+# ---------------------------------------------------------------------------
+# v2.3: input checks
+# ---------------------------------------------------------------------------
+
+
+def test_exclusion_of_unknown_response_rejected():
+    with pytest.raises(ValueError, match="not kept"):
+        count_poll(n_received=5, no_content_ids=[], kept_ids=list(build({"a": 5})),
+                   exclusions={"zz": FinalExclusion(reason="off_topic", status="agreed")},
+                   codebook={"main": book(st("a"))}, labels=build({"a": 5}), settings=P)
+
+
+def test_alt_exclusion_must_name_a_counted_response():
+    with pytest.raises(ValueError, match="alt_exclusions"):
+        run(build({"a": 5}), {"main": book(st("a"))}, triage={"x": "off_topic"}, alt_exclusions={"x": "off_topic"})

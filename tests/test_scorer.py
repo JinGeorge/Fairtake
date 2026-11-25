@@ -12,7 +12,7 @@ from pipeline.config import REPO_ROOT, load_config
 from pipeline.count import count_poll
 from pipeline.finalize import finalize
 from pipeline.loader import list_poll_ids, load_poll
-from schema.report import FinalLabel, Stance, SubIssue, WriteOutput
+from schema.report import FinalExclusion, FinalLabel, Stance, SubIssue, WriteOutput
 
 CFG = load_config()
 P = CFG.pipeline
@@ -24,12 +24,13 @@ def sid(view):
 
 
 def report_from_truth(poll_id, *, relabel=None, extra_stances=(), contested=(), sub_ids=None,
-                      reverse_subs=False, summaries=None):
+                      reverse_subs=False, summaries=None, groups=None):
     """Build a report through the real count + finalize code from the answer key.
 
     relabel: {rid: stance_id} overrides for the first sub-issue.
     extra_stances: [(stance_id, group)] added to the first sub-issue's codebook.
     contested: [(rid, alt_stance_id)] marked contested on the first sub-issue.
+    groups: {rid: group} per-response groups set on the first sub-issue.
     """
     truth = load_truth(poll_id, CFG)
     poll = load_poll(poll_id, CFG)
@@ -50,7 +51,8 @@ def report_from_truth(poll_id, *, relabel=None, extra_stances=(), contested=(), 
     if reverse_subs:
         codebook = dict(reversed(list(codebook.items())))
 
-    triage = {rid: r for rid, r in truth.excluded.items() if r in ("off_topic", "low_content")}
+    exclusions = {rid: FinalExclusion(reason=r, status="agreed")
+                  for rid, r in truth.excluded.items() if r in ("off_topic", "low_content")}
     labels = {}
     for rid in sorted(truth.respondent_ids + [r for r, why in truth.excluded.items() if why == "no_position"]):
         labels[rid] = {}
@@ -62,10 +64,12 @@ def report_from_truth(poll_id, *, relabel=None, extra_stances=(), contested=(), 
     for rid, alt in contested:
         stance = labels[rid][rsub[first]].stance
         labels[rid][rsub[first]] = FinalLabel(stance=stance, status="contested", alt=alt)
+    for rid, group in (groups or {}).items():
+        labels[rid][rsub[first]] = labels[rid][rsub[first]].model_copy(update={"group": group})
 
     count = count_poll(
         n_received=len(poll.responses), no_content_ids=[], kept_ids=[r.id for r in poll.responses],
-        triage=triage, codebook=codebook, labels=labels, settings=P,
+        exclusions=exclusions, codebook=codebook, labels=labels, settings=P,
     )
     return finalize(
         poll_id=poll_id, question=poll.question, count=count, sub_issues=sub_meta, codebook=codebook,
@@ -134,6 +138,7 @@ def test_perfect_report_scores_perfectly(poll_id):
     assert s["minority_recall"] in (1.0, None)
     assert s["majority_calls_correct"] == 1.0 and s["wrong_unflagged"] == 0
     assert s["group_type_accuracy"] == 1.0
+    assert s["response_group_accuracy"] == 1.0
     assert s["exclusion_precision"] == 1.0 and s["exclusion_recall"] == 1.0
     assert all(not v for v in s["missed_views"].values())
     assert all(not v for v in s["extra_stances"].values())
@@ -198,6 +203,17 @@ def test_wrong_but_flagged_call_is_not_counted():
     assert s["majority_calls_correct"] == 0.0
     assert s["wrong_unflagged"] == 0 and s["flag_rate"] == 1.0
     assert s["accuracy_contested"] == 0.0 and s["accuracy_agreed"] == 1.0
+
+
+def test_wrong_response_groups_lower_group_accuracy_and_flag_the_stance():
+    truth = load_truth("poll2_dues_increase", CFG)
+    approve = [rid for rid, v in truth.sub_issues[0].labels.items() if v == "approve"][:4]
+    report = report_from_truth("poll2_dues_increase", groups={rid: "conditional" for rid in approve})
+    s = score_report(report, CFG)
+    assert s["response_group_accuracy"] == pytest.approx(36 / 40)
+    assert s["group_type_accuracy"] == 1.0  # the stance's own group is still right
+    assert s["group_flags"] == {"main": ["s_approve"]}
+    assert report.sub_issues[0].group_result.for_ == 14
 
 
 def test_accepted_alternative_for_abusive_response():

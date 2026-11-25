@@ -6,7 +6,7 @@ An anonymous feedback tool for groups such as HOAs/strata committees, clubs and 
 
 **Core idea:** LLM summaries under-represent minority views and misstate splits. Fairtake has the LLM only *read and label* responses (stance coding), twice in independent passes; code does all counting, majority calls, ordering and checking, and flags any majority call that could change with the labels the two passes disagree on. An evaluation harness measures this against a strong single-call baseline.
 
-**The pipeline build spec is `Fairtake_pipelinev2.md` (v2.2). It is the source of truth for the pipeline, schema, metrics and layout.** `FAIRTAKE_PIPELINE.md` (v2.1), `architecture_for_review.md` (v2.1 review brief) and `plan_for_review.md` (cluster-first design) are historical only; do not build from them.
+**The pipeline build spec is `Fairtake_pipelinev2.md` (v2.3). It is the source of truth for the pipeline, schema, metrics and layout.** `FAIRTAKE_PIPELINE.md` (v2.1), `architecture_for_review.md` (v2.1 review brief) and `plan_for_review.md` (cluster-first design) are historical only; do not build from them.
 
 ## Components
 1. Admin dashboard: create poll, invite links, response count only

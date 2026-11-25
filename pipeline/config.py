@@ -65,6 +65,7 @@ class PipelineSettings(_Settings):
     min_group: int = Field(ge=1)
     leak_ngram: int = Field(ge=3)
     sens_max_contested: int = Field(ge=0, le=20)
+    group_mismatch_min: int = Field(ge=1)
     shuffle: bool
     double_coding: bool
     validation_retry: bool

@@ -4,7 +4,7 @@ from pipeline.config import load_config
 from pipeline.count import count_poll
 from pipeline.finalize import LeakChecker, find_leaks, finalize, user_visible_strings
 from pipeline.render import public_dict, render_html, render_text
-from schema.report import CommonGroundIn, FinalLabel, Meta, Stance, SubIssue, WriteOutput
+from schema.report import CommonGroundIn, FinalExclusion, FinalLabel, Meta, Stance, SubIssue, WriteOutput
 
 CFG = load_config()
 P = CFG.pipeline
@@ -57,7 +57,6 @@ def camera_count(labels, codebook):
         n_received=34,
         no_content_ids=[],
         kept_ids=list(labels),
-        triage={},
         codebook=codebook,
         labels=labels,
         settings=P,
@@ -203,7 +202,7 @@ def test_headline_with_response_rate():
 def test_too_few_report():
     labels = {f"r{i}": {"main": FinalLabel(stance="support", status="agreed")} for i in range(1, 4)}
     count = count_poll(
-        n_received=3, no_content_ids=[], kept_ids=list(labels), triage={},
+        n_received=3, no_content_ids=[], kept_ids=list(labels),
         codebook=camera_codebook(), labels=labels, settings=P,
     )
     report = finalize(
@@ -235,3 +234,46 @@ def test_render_text_and_html():
     page = render_html(report)
     assert "&lt;b&gt;please&lt;/b&gt;" in page and "<b>please</b>" not in page
     assert "r01" not in page and "r01" not in text
+
+
+# ---------------------------------------------------------------------------
+# v2.3: contested exclusions, group flags, per-response groups
+# ---------------------------------------------------------------------------
+
+
+def _finalize(count, codebook):
+    return finalize(
+        poll_id="cameras", question=QUESTION, count=count,
+        sub_issues=[SubIssue(id="main", description="Whether to install cameras")], codebook=codebook,
+        written=WRITTEN, response_texts=list(camera_texts().values()), roster_names=[], n_invited=None, settings=P,
+    )
+
+
+def test_headline_mentions_contested_exclusions():
+    codebook = camera_codebook()
+    labels = camera_labels()
+    exclusions = {"r_x": FinalExclusion(reason="off_topic", status="contested")}
+    count = count_poll(n_received=35, no_content_ids=[], kept_ids=list(labels) + ["r_x"], exclusions=exclusions,
+                       codebook=codebook, labels=labels, settings=P)
+    report = _finalize(count, codebook)
+    assert report.contested_exclusions == 1
+    assert report.overall_summary.endswith("1 response could reasonably have been counted or left out.")
+
+
+def test_group_flags_reach_theme_headline_and_are_stripped_where_internal():
+    codebook = camera_codebook()
+    labels = camera_labels()
+    for rid in ("r01", "r02"):
+        labels[rid] = {"main": FinalLabel(stance="support", status="agreed", group="conditional",
+                                          group_status="agreed")}
+    report = _finalize(camera_count(labels, codebook), codebook)
+    sub = report.sub_issues[0]
+    themes = {t.stance_id: t for t in sub.themes}
+    assert themes["support"].group_mismatch == 2 and themes["oppose"].group_mismatch == 0
+    assert sub.group_flags == ["support"]
+    assert sub.group_result.for_ == 18 and sub.group_result.conditional == 6
+    assert "did not fit the for/against grouping" in report.overall_summary
+    assert sub.response_groups["r01"] == "conditional"
+    public = public_dict(report)
+    assert "response_groups" not in public["sub_issues"][0]
+    assert public["sub_issues"][0]["group_flags"] == ["support"]

@@ -19,7 +19,7 @@ def public_dict(report: Report) -> dict[str, Any]:
     if run_index > 1:
         data["run_index"] = run_index
     for sub in data.get("sub_issues", []):
-        for internal in ("other_ids", "not_addressed_ids", "contested_ids"):
+        for internal in ("other_ids", "not_addressed_ids", "contested_ids", "response_groups"):
             sub.pop(internal, None)
         for theme in sub.get("themes", []):
             theme.pop("response_ids", None)
