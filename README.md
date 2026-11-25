@@ -8,7 +8,7 @@ Members submit free-text views on an issue through single-use links. Only the AI
 
 LLM summaries tend to under-represent minority views and misstate close splits. In Fairtake the LLM only **reads and labels**: it proposes a codebook of stances, then labels each response with one stance and an evidence quote, in two independent passes. **Code does the rest**: it checks every label, counts, applies fixed majority rules, flags any majority call that could change with the responses the two passes disagree on, orders the views, and blocks any quoted or identifying text from reaching the report.
 
-An evaluation harness compares this against a strong single-call baseline (same counting code) and a naive one (the model writes its own counts). The full spec is in [Fairtake_pipelinev2.md](Fairtake_pipelinev2.md) (v2.2). The earlier [FAIRTAKE_PIPELINE.md](FAIRTAKE_PIPELINE.md) (v2.1) is kept for history only.
+An evaluation harness compares this against a strong single-call baseline (same counting code) and a naive one (the model writes its own counts). The full spec is in [Fairtake_pipelinev2.md](Fairtake_pipelinev2.md) (v2.3). The earlier [FAIRTAKE_PIPELINE.md](FAIRTAKE_PIPELINE.md) (v2.1) is kept for history only.
 
 ## Components
 

@@ -21,6 +21,18 @@ GROUP_FALLBACK = {
 }
 
 
+GROUP_FLAG_SENTENCE = (
+    "Some responses did not fit the for/against grouping of their view, "
+    "so the totals for and against are less certain."
+)
+
+
+def contested_exclusions_sentence(k: int) -> str:
+    if k == 1:
+        return "1 response could reasonably have been counted or left out."
+    return f"{k} responses could reasonably have been counted or left out."
+
+
 def respondents(n: int) -> str:
     return "respondent" if n == 1 else "respondents"
 

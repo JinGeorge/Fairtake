@@ -12,7 +12,7 @@ from collections import Counter
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 
-from schema.report import NOT_ADDRESSED, Label, RedactSpan, Stance
+from schema.report import NO_GROUP, NOT_ADDRESSED, Label, RedactSpan, Stance
 
 REMOVED = "[removed]"
 _WHITESPACE = re.compile(r"\s+")
@@ -39,8 +39,9 @@ def evidence_ok(evidence: str, text: str) -> bool:
 @dataclass
 class PassValidation:
     labels: dict[str, dict[str, Label]]  # valid labels only: id -> sub-issue -> label
-    failed_ids: list[str]  # ids with at least one missing or invalid label
+    failed_ids: list[str]  # ids with no valid exclusion and at least one missing or invalid label
     problems: list[str] = field(default_factory=list)
+    excluded: dict[str, str] = field(default_factory=dict)  # valid exclusion votes: id -> reason
 
 
 def validate_pass(
@@ -48,11 +49,17 @@ def validate_pass(
     expected_ids: Sequence[str],
     codebook: Mapping[str, Sequence[Stance]],
     texts: Mapping[str, str],
+    exclusions: Mapping[str, str] | None = None,
 ) -> PassValidation:
-    """Check one pass: one label per id per sub-issue, known stances, real evidence."""
+    """Check one pass (spec §4.4).
+
+    Every id needs either an exclusion vote with no labels, or exactly one label
+    per sub-issue with a known stance, a group and real evidence.
+    """
     valid_stances = {sub: {s.id for s in stances} for sub, stances in codebook.items()}
     expected = set(expected_ids)
     seen: dict[tuple[str, str], list[Label]] = {}
+    labelled: set[str] = set()
     problems: list[str] = []
 
     for label in labels:
@@ -60,12 +67,28 @@ def validate_pass(
             problems.append(f"unexpected id {label.id!r}")
         elif label.sub_issue not in valid_stances:
             problems.append(f"{label.id}: unknown sub-issue {label.sub_issue!r}")
+            labelled.add(label.id)
         else:
             seen.setdefault((label.id, label.sub_issue), []).append(label)
+            labelled.add(label.id)
+
+    excluded: dict[str, str] = {}
+    for rid, reason in (exclusions or {}).items():
+        if rid not in expected:
+            problems.append(f"unexpected excluded id {rid!r}")
+        elif rid in labelled:
+            problems.append(f"{rid}: both excluded and labelled")
+        else:
+            excluded[rid] = reason
 
     valid: dict[str, dict[str, Label]] = {}
     failed: list[str] = []
     for rid in expected_ids:
+        if rid in excluded:
+            continue
+        if rid in (exclusions or {}):  # excluded and labelled: the whole id fails
+            failed.append(rid)
+            continue
         all_ok = True
         for sub in codebook:
             problem = _check_one(rid, sub, seen.get((rid, sub), []), valid_stances[sub], texts[rid])
@@ -76,7 +99,7 @@ def validate_pass(
                 valid.setdefault(rid, {})[sub] = seen[(rid, sub)][0]
         if not all_ok:
             failed.append(rid)
-    return PassValidation(valid, failed, problems)
+    return PassValidation(valid, failed, problems, excluded)
 
 
 def _check_one(rid: str, sub: str, candidates: list[Label], stances: set[str], text: str) -> str | None:
@@ -85,6 +108,10 @@ def _check_one(rid: str, sub: str, candidates: list[Label], stances: set[str], t
     label = candidates[0]
     if label.stance not in stances:
         return f"{rid}/{sub}: unknown stance {label.stance!r}"
+    if label.group is None:
+        return f"{rid}/{sub}: group is missing"
+    if label.stance == NOT_ADDRESSED and label.group != NO_GROUP:
+        return f"{rid}/{sub}: not_addressed must have group none"
     if label.evidence.strip():
         if not evidence_ok(label.evidence, text):
             return f"{rid}/{sub}: evidence is not in the response"
@@ -94,13 +121,27 @@ def _check_one(rid: str, sub: str, candidates: list[Label], stances: set[str], t
 
 
 def merge_retry(first: PassValidation, retry: PassValidation, sub_ids: Sequence[str]) -> PassValidation:
-    """Fill gaps in the first attempt with valid labels from the retry call."""
+    """Fill gaps in the first attempt with valid results from the retry call.
+
+    A retried id that the retry excludes is excluded, and its partial labels
+    from the first attempt are dropped, so an id is never both.
+    """
     labels = {rid: dict(subs) for rid, subs in first.labels.items()}
+    excluded = dict(first.excluded)
+    retried = set(first.failed_ids)
+    for rid, reason in retry.excluded.items():
+        if rid in retried:
+            excluded[rid] = reason
+            labels.pop(rid, None)
     for rid, subs in retry.labels.items():
+        if rid in excluded:
+            continue
         for sub, label in subs.items():
             labels.setdefault(rid, {}).setdefault(sub, label)
-    failed = [rid for rid in first.failed_ids if len(labels.get(rid, {})) < len(sub_ids)]
-    return PassValidation(labels, failed, first.problems + retry.problems)
+    failed = [
+        rid for rid in first.failed_ids if rid not in excluded and len(labels.get(rid, {})) < len(sub_ids)
+    ]
+    return PassValidation(labels, failed, first.problems + retry.problems, excluded)
 
 
 # ---------------------------------------------------------------------------

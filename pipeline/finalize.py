@@ -21,7 +21,9 @@ from pipeline.count import CountResult, SubIssueCount
 from pipeline.prepare import SCRUB_TOKENS
 from pipeline.validate import REMOVED
 from pipeline.wording import (
+    contested_exclusions_sentence,
     GROUP_FALLBACK,
+    GROUP_FLAG_SENTENCE,
     group_sentence,
     respondents,
     stance_sentence,
@@ -199,6 +201,7 @@ def _sub_issue_report(
                 x_of_y=f"{count} of {n} {respondents(n)}",
                 kind=sub.theme_kinds[s.id],
                 contested=sub.stance_contested[s.id] if sub.contested_count is not None else None,
+                group_mismatch=sub.group_mismatch.get(s.id, 0),
                 response_ids=list(sub.stance_members[s.id]),
             )
         )
@@ -212,6 +215,7 @@ def _sub_issue_report(
         addressed=sub.addressed,
         other_count=sub.other_count,
         contested_count=sub.contested_count,
+        group_flags=list(sub.group_flags),
         stance_result=sub.stance_result,
         group_result=sub.group_result,
         themes=themes,
@@ -219,6 +223,7 @@ def _sub_issue_report(
         other_ids=list(sub.stance_members[OTHER]),
         not_addressed_ids=list(sub.stance_members[NOT_ADDRESSED]),
         contested_ids=list(sub.contested_ids),
+        response_groups=dict(sub.response_groups),
     )
     return report, labels
 
@@ -229,6 +234,7 @@ def headline(
     excluded: Excluded,
     subs: Sequence[SubIssueReport],
     labels: Mapping[str, Mapping[str, str]],
+    contested_exclusions: int | None = None,
 ) -> str:
     """The overall summary, built from counts and checked labels only."""
     n = n_respondents
@@ -256,6 +262,8 @@ def headline(
             if g.alternative:
                 counts += f", {g.alternative} proposing a different approach"
             parts.append(f"In total: {counts}. {group_sentence(g.kind, g.group, g.robust)}")
+            if sub.group_flags:
+                parts.append(GROUP_FLAG_SENTENCE)
         if sub.other_count:
             parts.append(f"{sub.other_count} {respondents(sub.other_count)} gave a view that fits none of the groups above.")
         if sub.not_addressed:
@@ -265,6 +273,8 @@ def headline(
             f"{excluded.total} {'response was' if excluded.total == 1 else 'responses were'} not counted "
             "(empty, off-topic or without a position)."
         )
+    if contested_exclusions:
+        parts.append(contested_exclusions_sentence(contested_exclusions))
     return " ".join(parts)
 
 
@@ -337,9 +347,12 @@ def finalize(
         n_received=count.n_received,
         n_respondents=count.n_respondents,
         excluded=count.excluded,
+        contested_exclusions=count.contested_exclusions,
         ambiguous_count=count.ambiguous_count,
         sub_issues=reports,
-        overall_summary=headline(count.n_respondents, n_invited, count.excluded, reports, labels),
+        overall_summary=headline(
+            count.n_respondents, n_invited, count.excluded, reports, labels, count.contested_exclusions
+        ),
         meta=meta,
     )
 

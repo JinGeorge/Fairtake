@@ -19,6 +19,8 @@ RESERVED_STANCES = frozenset({OTHER, NOT_ADDRESSED})
 
 GroupType = Literal["for", "against", "conditional", "alternative"]
 GROUP_TYPES: tuple[str, ...] = ("for", "against", "conditional", "alternative")
+NO_GROUP = "none"
+ResponseGroup = Literal["for", "against", "conditional", "alternative", "none"]
 TriageReason = Literal["off_topic", "low_content"]
 RedactReason = Literal["abuse", "identifying", "injection"]
 Kind = Literal["majority", "narrow_majority", "plurality", "no_clear_majority"]
@@ -110,7 +112,7 @@ def check_codebook(sub_issues: list[SubIssue], codebook: dict[str, list[Stance]]
 class DesignOutput(_Model):
     """Call 1."""
 
-    triage: dict[str, TriageReason] = Field(default_factory=dict)
+    proposed_exclusions: dict[str, TriageReason] = Field(default_factory=dict)  # a proposal only (v2.3)
     redact_spans: dict[str, list[RedactSpan]] = Field(default_factory=dict)
     sub_issues: list[SubIssue] = Field(min_length=1)
     codebook: dict[str, list[Stance]]
@@ -122,18 +124,25 @@ class DesignOutput(_Model):
 
 
 class Label(_Model):
-    """One label from a coding pass (Calls 2a, 2b, 1b)."""
+    """One label from a coding pass (Calls 2a, 2b, 1b).
+
+    ``group`` is the group type of this response, judged from its text (v2.3).
+    It is optional in the schema so a missing group fails only this label in
+    validation, not the whole call.
+    """
 
     id: str
     sub_issue: str
     stance: str
+    group: ResponseGroup | None = None
     evidence: str = ""
 
 
 class CodingOutput(_Model):
-    """Calls 2a and 2b."""
+    """Calls 2a and 2b: an exclusion vote, or labels, for every response."""
 
-    labels: list[Label]
+    exclusions: dict[str, TriageReason] = Field(default_factory=dict)
+    labels: list[Label] = Field(default_factory=list)
 
 
 class OtherPassOutput(_Model):
@@ -215,6 +224,7 @@ class Theme(_Model):
     x_of_y: str
     kind: ThemeKind
     contested: int | None = None
+    group_mismatch: int | None = None  # members whose own group differs from this stance's group
     response_ids: list[str] = Field(default_factory=list)
 
 
@@ -230,6 +240,7 @@ class SubIssueReport(_Model):
     addressed: int = Field(ge=0)
     other_count: int = Field(ge=0)
     contested_count: int | None = None
+    group_flags: list[str] = Field(default_factory=list)  # stance ids whose group type looks wrong
     stance_result: StanceResult
     group_result: GroupResult | None = None
     themes: list[Theme]
@@ -238,6 +249,7 @@ class SubIssueReport(_Model):
     other_ids: list[str] = Field(default_factory=list)
     not_addressed_ids: list[str] = Field(default_factory=list)
     contested_ids: list[str] = Field(default_factory=list)
+    response_groups: dict[str, ResponseGroup] = Field(default_factory=dict)
 
 
 class Meta(_Model):
@@ -248,6 +260,9 @@ class Meta(_Model):
     cost_usd: float | None = None
     latency_s: float | None = None
     pass_agreement: float | None = None
+    group_agreement: float | None = None
+    exclusion_agreement: float | None = None
+    call1_exclusion_agreement: float | None = None
     other_rate_before: float | None = None
     other_rate_after: float | None = None
     redactions: dict[str, int] = Field(default_factory=dict)
@@ -264,6 +279,7 @@ class Report(_Model):
     n_received: int = Field(ge=0)
     n_respondents: int = Field(ge=0)
     excluded: Excluded
+    contested_exclusions: int | None = None
     ambiguous_count: int = Field(default=0, ge=0)
     sub_issues: list[SubIssueReport] = Field(default_factory=list)
     overall_summary: str
@@ -276,8 +292,26 @@ class Report(_Model):
 
 
 class FinalLabel(_Model):
-    """A reconciled label for one response on one sub-issue (spec §4.5)."""
+    """A reconciled label for one response on one sub-issue (spec §4.5).
+
+    ``group`` is the response's own group; ``None`` means it was not labelled
+    per response (the baselines) and the stance's group is used instead.
+    """
 
     stance: str
     status: LabelStatus
     alt: str | None = None
+    group: ResponseGroup | None = None
+    group_status: LabelStatus | None = None
+    alt_group: ResponseGroup | None = None
+
+
+class FinalExclusion(_Model):
+    """A reconciled exclusion for one response (spec §4.5, v2.3).
+
+    ``alt`` holds pass B's labels when pass B labelled the response instead.
+    """
+
+    reason: TriageReason
+    status: Literal["agreed", "contested"]
+    alt: dict[str, FinalLabel] | None = None
